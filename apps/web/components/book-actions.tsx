@@ -1,9 +1,10 @@
 "use client"
 
-import { ShoppingBag, Heart, Check } from "lucide-react"
+import { ShoppingBag, Check } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { useState, useEffect } from "react"
 import { Book } from "@/lib/book-data"
+import { useCart } from "@/components/cart"
 
 interface BookActionsProps {
   book: Book
@@ -12,31 +13,23 @@ interface BookActionsProps {
 export function BookActions({ book }: BookActionsProps) {
   const [mounted, setMounted] = useState(false)
   const [addedToCart, setAddedToCart] = useState(false)
-
-  //const { addToCart, addToWishlist, removeFromWishlist } = useStore()
-  //const inWishlist = useStore((state) =>
-  //  state.wishlist.some((b) => b.id === book.id)
-  //)
+  const { addToCart } = useCart()
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
   const handleAddToCart = () => {
-    setAddedToCart(true)
+    addToCart({ id: book.id, title: book.title, author: book.author, price: book.price, coverImage: book.coverImage })
     setAddedToCart(true)
     setTimeout(() => setAddedToCart(false), 2000)
   }
-
 
   if (!mounted) {
     return (
       <div className="flex flex-col gap-3 sm:flex-row">
         <Button size="lg" className="h-14 flex-1 text-base">
           In den Warenkorb
-        </Button>
-        <Button variant="outline" size="lg" className="h-14 flex-1 text-base">
-          Merken
         </Button>
       </div>
     )

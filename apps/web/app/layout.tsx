@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@workspace/ui/lib/utils"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { AuthProvider } from "@/components/auth"
+import { CartProvider } from "@/components/cart"
 import { Toaster } from "sonner"
 import { ReactNode } from "react"
 import { TooltipProvider } from "@workspace/ui/components/tooltip"
@@ -45,11 +46,13 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           <QueryClientProvider client={queryClient}>
-            <TooltipProvider>
-              <ThemeProvider>
-                {children}
-              </ThemeProvider>
-            </TooltipProvider>
+            <CartProvider>
+              <TooltipProvider>
+                <ThemeProvider>
+                  {children}
+                </ThemeProvider>
+              </TooltipProvider>
+            </CartProvider>
           </QueryClientProvider>
 
           <Toaster />

@@ -1,9 +1,14 @@
 "use client"
 
 import { useAuth } from "@/components/auth"
+import { useEffect } from "react"
 
 export default function LogoutPage() {
   const { logout } = useAuth()
 
-  logout()
+  useEffect(() => {
+    logout()
+  }, [logout])
+
+  return null
 }

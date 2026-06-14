@@ -2,11 +2,12 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { Star, Heart, ShoppingBag } from "lucide-react"
+import { Star, ShoppingBag } from "lucide-react"
 import { Badge } from "@workspace/ui//components/badge"
 import { Button } from "@workspace/ui//components/button"
 import { useState, useEffect } from "react"
 import { Book } from "@/lib/book-data"
+import { useCart } from "@/components/cart"
 
 interface BookCardProps {
   book: Book
@@ -15,6 +16,7 @@ interface BookCardProps {
 
 export function BookCard({ book, featured = false }: BookCardProps) {
   const [mounted, setMounted] = useState(false)
+  const { addToCart } = useCart()
 
   useEffect(() => {
     setMounted(true)
@@ -23,17 +25,7 @@ export function BookCard({ book, featured = false }: BookCardProps) {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    // addToCart(book)
-  }
-
-  const handleWishlistToggle = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    //if (inWishlist) {
-    //  removeFromWishlist(book.id)
-    //} else {
-    //  addToWishlist(book)
-    //}
+    addToCart({ id: book.id, title: book.title, author: book.author, price: book.price, coverImage: book.coverImage })
   }
 
   return (
@@ -62,17 +54,8 @@ export function BookCard({ book, featured = false }: BookCardProps) {
             </Badge>
           )}
 
-          {/* Quick Actions Overlay */}
           {mounted && (
             <div className="absolute right-3 bottom-3 flex gap-1.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-              <Button
-                size="icon"
-                variant="secondary"
-                className="h-8 w-8 rounded-sm shadow-md"
-                onClick={handleWishlistToggle}
-              >
-                {/*<Heart className={`h-4 w-4 ${inWishlist ? "fill-current text-primary" : ""}`} />*/}
-              </Button>
               <Button
                 size="icon"
                 className="h-8 w-8 rounded-sm shadow-md"
@@ -88,9 +71,9 @@ export function BookCard({ book, featured = false }: BookCardProps) {
       <div
         className={`mt-4 ${featured ? "md:mt-0 md:flex md:flex-col md:justify-center" : ""}`}
       >
-        <Link href={`/apps/web/app/(main)/book/${book.id}`}>
+        <Link href={`/book/${book.id}`}>
           <p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
-            {book.categories.join(" ")}
+            {book.categories.join(" · ")}
           </p>
           <h3
             className={`mt-1 font-serif leading-tight font-bold text-foreground ${

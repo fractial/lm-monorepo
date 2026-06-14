@@ -8,15 +8,13 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuPortal,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
-import { Check, Copy, MoreHorizontal, Trash2, User } from "lucide-react"
+import { Check, Copy, MoreHorizontal, Trash2, BookOpen } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,63 +30,42 @@ import {
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { useEffect, useState } from "react"
-import { Avatar, AvatarFallback } from "@workspace/ui/components/avatar"
 import { Badge } from "@workspace/ui/components/badge"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { API_URL, useAuth } from "@/components/auth"
+import { EditBookForm } from "@/components/forms/edit-book-form"
 
-export type User = {
-  orderCount: number
-  canPayOnInvoice: boolean
-  isAdmin: boolean
-  email: string
-  password: string
-  name: string
-  address?:
-    | {
-        street: string
-        city: string
-        zip: string
-        country: string
-      }
-    | undefined
-  id: string
-  createdAt: string
-  updatedAt: string
-}
+import type { Book } from "@/lib/book-data"
+export type { Book }
 
-const USERS_QUERY_KEY = ["users"]
+export const BOOKS_QUERY_KEY = ["books"]
 
-export function useUsers() {
+export function useBooks() {
   const queryClient = useQueryClient()
-
-  const {accessToken} = useAuth()
+  const { accessToken } = useAuth()
 
   const query = useQuery({
-    queryKey: USERS_QUERY_KEY,
+    queryKey: BOOKS_QUERY_KEY,
     queryFn: async () => {
-      const res = await fetch(`${API_URL}/user`, {
+      const res = await fetch(`${API_URL}/book`, {
         method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken?.token}`,
-        },
       })
       if (!res.ok) {
-        throw new Error("Failed to fetch users")
+        throw new Error("Failed to fetch books")
       }
-      return await res.json() as User[]
-    }
+      return (await res.json()) as Book[]
+    },
   })
 
-  const updateUser = useMutation({
+  const updateBook = useMutation({
     mutationFn: async ({
       id,
       data,
     }: {
-      id: string,
-      data: Partial<User>
+      id: string
+      data: Partial<Book>
     }) => {
-      const res = await fetch(`${API_URL}/user/${id}`, {
+      const res = await fetch(`${API_URL}/book/${id}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${accessToken?.token}`,
@@ -97,83 +74,75 @@ export function useUsers() {
         body: JSON.stringify(data),
       })
       if (!res.ok) {
-        throw new Error("Failed to update user")
+        throw new Error("Failed to update book")
       }
-      return await res.json() as User
+      return (await res.json()) as Book
     },
     onMutate: async ({ id, data }) => {
-      await queryClient.cancelQueries({ queryKey: USERS_QUERY_KEY })
+      await queryClient.cancelQueries({ queryKey: BOOKS_QUERY_KEY })
 
-      const previous = queryClient.getQueryData<User[]>(USERS_QUERY_KEY)
+      const previous = queryClient.getQueryData<Book[]>(BOOKS_QUERY_KEY)
 
-      queryClient.setQueryData<User[]>(
-        USERS_QUERY_KEY,
-        (old = []) =>
-          old.map((user) => user.id === id ? {...user, ...data} : user)
+      queryClient.setQueryData<Book[]>(
+        BOOKS_QUERY_KEY,
+        (old = []) => old.map((book) => (book.id === id ? { ...book, ...data } : book))
       )
 
       return { previous }
     },
     onError: (error, variables, context) => {
-      queryClient.setQueryData(USERS_QUERY_KEY, context?.previous)
+      queryClient.setQueryData(BOOKS_QUERY_KEY, context?.previous)
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY })
-    }
+      queryClient.invalidateQueries({ queryKey: BOOKS_QUERY_KEY })
+    },
   })
 
-  const deleteUser = useMutation({
+  const deleteBook = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`${API_URL}/user/${id}`, {
+      const res = await fetch(`${API_URL}/book/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${accessToken?.token}`,
-        }
+        },
       })
       if (!res.ok) {
-        throw new Error("Failed to update user")
+        throw new Error("Failed to delete book")
       }
       return id
     },
     onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: USERS_QUERY_KEY })
+      await queryClient.cancelQueries({ queryKey: BOOKS_QUERY_KEY })
 
-      const previous = queryClient.getQueryData<User[]>(USERS_QUERY_KEY)
+      const previous = queryClient.getQueryData<Book[]>(BOOKS_QUERY_KEY)
 
-      queryClient.setQueryData<User[]>(USERS_QUERY_KEY, (old = []) =>
-        old.filter((user) => user.id !== id)
+      queryClient.setQueryData<Book[]>(BOOKS_QUERY_KEY, (old = []) =>
+        old.filter((book) => book.id !== id)
       )
 
       return { previous }
     },
     onError: (error, id, context) => {
-      queryClient.setQueryData(USERS_QUERY_KEY, context?.previous)
+      queryClient.setQueryData(BOOKS_QUERY_KEY, context?.previous)
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY })
+      queryClient.invalidateQueries({ queryKey: BOOKS_QUERY_KEY })
     },
   })
 
   return {
-    users: query.data ?? [],
+    books: query.data ?? [],
     isLoading: query.isLoading,
     error: query.error,
-    updateUser: updateUser.mutate,
-    deleteUser: deleteUser.mutate,
-    isUpdating: updateUser.isPending,
-    isDeleting: deleteUser.isPending,
+    updateBook: updateBook.mutate,
+    deleteBook: deleteBook.mutate,
+    isUpdating: updateBook.isPending,
+    isDeleting: deleteBook.isPending,
+    data: query.data,
   }
 }
 
-export const initials = (s: string) => {
-  const w = s.trim().split(/\s+/)
-
-  return (
-    (w[0]?.[0] ?? "") + (w.length > 1 ? (w[w.length - 1]?.[0] ?? "") : "")
-  ).toUpperCase()
-}
-
-export function useUsersSSE() {
+export function useBooksSSE() {
   const queryClient = useQueryClient()
 
   useEffect(() => {
@@ -183,10 +152,10 @@ export function useUsersSSE() {
       console.log("SSE connected")
     })
 
-    sse.addEventListener("users-updated", () => {
-      console.log("users updated")
+    sse.addEventListener("books-updated", () => {
+      console.log("books updated")
       queryClient.invalidateQueries({
-        queryKey: USERS_QUERY_KEY,
+        queryKey: BOOKS_QUERY_KEY,
       })
     })
 
@@ -199,89 +168,115 @@ export function useUsersSSE() {
 }
 
 export const columnTitles = {
-  name: "Name",
-  email: "Email",
-  isAdmin: "Role",
-  createdAt: "Joined date",
-} satisfies Partial<Record<keyof User, string>>
+  title: "Title",
+  price: "Price",
+  categories: "Categories",
+  publishedYear: "Year",
+} satisfies Partial<Record<string, string>>
 
-export const columns: ColumnDef<User>[] = [
+export const columns: ColumnDef<Book>[] = [
   {
-    accessorKey: "name",
+    accessorKey: "title",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title={columnTitles.name} />
+      <DataTableColumnHeader column={column} title={columnTitles.title} />
     ),
     cell: ({ row }) => {
+      const book = row.original
       return (
-        <div className="flex items-center gap-2">
-          <Avatar>
-            <AvatarFallback>{initials(row.original.name)}</AvatarFallback>
-          </Avatar>
-          {row.original.name}
+        <div className="flex flex-col">
+          <span className="font-bold">{book.title}</span>
+          <span className="text-sm text-muted-foreground">{book.author}</span>
         </div>
       )
     },
   },
   {
-    accessorKey: "email",
+    accessorKey: "price",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title={columnTitles.email} />
-    ),
-  },
-  {
-    accessorKey: "isAdmin",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title={columnTitles.isAdmin} />
+      <DataTableColumnHeader column={column} title={columnTitles.price} />
     ),
     cell: ({ row }) => {
-      const user = row.original
+      const book = row.original
       return (
-        <span className="capitalize">
-          {user.isAdmin ? (
-            <Badge>Admin</Badge>
-          ) : (
-            <Badge variant="secondary">User</Badge>
+        <div className="flex flex-col">
+          <span>{book.price.toFixed(2)} €</span>
+          {book.originalPrice !== undefined && (
+            <span className="text-sm text-muted-foreground line-through">
+              {book.originalPrice.toFixed(2)} €
+            </span>
           )}
-        </span>
+        </div>
       )
     },
   },
   {
-    accessorKey: "createdAt",
+    accessorKey: "categories",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title={columnTitles.createdAt} />
+      <DataTableColumnHeader column={column} title={columnTitles.categories} />
     ),
+    enableSorting: false,
     cell: ({ row }) => {
-      const date = new Date(row.original.createdAt)
+      const categories = row.original.categories
+      const visible = categories.slice(0, 2)
+      const rest = categories.length - 2
 
-      const datePart = new Intl.DateTimeFormat("en-GB", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }).format(date)
-
-      const timePart = new Intl.DateTimeFormat("en-GB", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-      }).format(date)
-
-      return `${datePart}, ${timePart}`
+      return (
+        <div className="flex flex-wrap gap-1">
+          {visible.map((cat) => (
+            <Badge key={cat} variant="secondary">
+              {cat}
+            </Badge>
+          ))}
+          {rest > 0 && <Badge variant="outline">+{rest}</Badge>}
+        </div>
+      )
     },
+  },
+  {
+    id: "status",
+    header: "Status",
+    enableSorting: false,
+    cell: ({ row }) => {
+      const book = row.original
+      return (
+        <div className="flex flex-wrap gap-1">
+          {book.featured && (
+            <Badge variant="secondary" className="text-xs">
+              Featured
+            </Badge>
+          )}
+          {book.bestseller && (
+            <Badge variant="secondary" className="text-xs">
+              Bestseller
+            </Badge>
+          )}
+          {book.newRelease && (
+            <Badge variant="secondary" className="text-xs">
+              New Release
+            </Badge>
+          )}
+        </div>
+      )
+    },
+  },
+  {
+    accessorKey: "publishedYear",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title={columnTitles.publishedYear} />
+    ),
   },
   {
     id: "action",
     cell: ({ row }) => {
-      const user = row.original
-      const userId = user.id.slice(0, 8)
+      const book = row.original
+      const bookId = book.id.slice(0, 8)
 
       const [open, setOpen] = useState<boolean>(false)
       const [confirmText, setConfirmText] = useState<string>("")
       const [copied, setCopied] = useState<boolean>(false)
 
-      const handleCopy = async (user: string) => {
-        await navigator.clipboard.writeText(user)
+      const handleCopy = async (text: string) => {
+        await navigator.clipboard.writeText(text)
 
         setCopied(true)
 
@@ -290,7 +285,7 @@ export const columns: ColumnDef<User>[] = [
         }, 3000)
       }
 
-      const { deleteUser, updateUser } = useUsers()
+      const { deleteBook, updateBook } = useBooks()
 
       return (
         <div className="flex justify-end">
@@ -303,21 +298,37 @@ export const columns: ColumnDef<User>[] = [
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <EditBookForm book={book} />
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
-                  <User /> Edit
+                  <BookOpen /> Flags
                 </DropdownMenuSubTrigger>
                 <DropdownMenuPortal>
                   <DropdownMenuSubContent>
-                    <DropdownMenuItem onClick={() => {
-                      updateUser({
-                        id: user.id,
-                        data: {
-                          isAdmin: !user.isAdmin,
-                        }
-                      })
-                      setOpen(false)
-                    }}>Toggle Admin</DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        updateBook({ id: book.id, data: { featured: !book.featured } })
+                        setOpen(false)
+                      }}
+                    >
+                      Toggle Featured
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        updateBook({ id: book.id, data: { bestseller: !book.bestseller } })
+                        setOpen(false)
+                      }}
+                    >
+                      Toggle Bestseller
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        updateBook({ id: book.id, data: { newRelease: !book.newRelease } })
+                        setOpen(false)
+                      }}
+                    >
+                      Toggle New Release
+                    </DropdownMenuItem>
                   </DropdownMenuSubContent>
                 </DropdownMenuPortal>
               </DropdownMenuSub>
@@ -338,13 +349,13 @@ export const columns: ColumnDef<User>[] = [
                     <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
                       <Trash2 />
                     </AlertDialogMedia>
-                    <AlertDialogTitle>Delete user?</AlertDialogTitle>
+                    <AlertDialogTitle>Delete book?</AlertDialogTitle>
                     <AlertDialogDescription className="flex flex-col gap-1.5">
                       <span className="flex flex-col gap-1.5">
                         <span>
                           <span>
-                            Are you sure you want to remove the user? Once
-                            removed the user will no longer be accessible.
+                            Are you sure you want to remove the book? Once
+                            removed the book will no longer be accessible.
                           </span>
                         </span>
                         <span className="text-destructive">
@@ -354,7 +365,7 @@ export const columns: ColumnDef<User>[] = [
                       <span className="flex items-center text-sm font-semibold">
                         Type
                         <code
-                          onClick={() => handleCopy(userId)}
+                          onClick={() => handleCopy(bookId)}
                           className="relative mx-[0.3rem] flex cursor-pointer items-center rounded bg-muted px-[0.3rem] py-[0.2rem]"
                         >
                           {copied ? (
@@ -362,7 +373,7 @@ export const columns: ColumnDef<User>[] = [
                           ) : (
                             <Copy className="h-3.5" />
                           )}
-                          {userId}
+                          {bookId}
                         </code>
                         to confirm.
                       </span>
@@ -379,11 +390,11 @@ export const columns: ColumnDef<User>[] = [
                     </AlertDialogCancel>
                     <AlertDialogAction
                       variant="destructive"
-                      disabled={confirmText !== userId}
+                      disabled={confirmText !== bookId}
                       onClick={() => {
                         setConfirmText("")
                         setOpen(false)
-                        deleteUser(user.id)
+                        deleteBook(book.id)
                       }}
                     >
                       Delete

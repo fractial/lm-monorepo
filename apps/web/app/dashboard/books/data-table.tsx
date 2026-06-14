@@ -31,9 +31,9 @@ import {
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
 import { Settings2 } from "lucide-react"
-import { AddUserForm } from "@/components/forms/add-user-form"
+import { AddBookForm } from "@/components/forms/add-book-form"
 import { DataTablePagination } from "@/components/tables/data-table-pagination"
-import { columnTitles } from "@/app/dashboard/orders/columns"
+import { columnTitles } from "@/app/dashboard/books/columns"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -45,9 +45,7 @@ export function DataTable<TData, TValue>({
   data,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
-    []
-  )
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
 
@@ -74,21 +72,17 @@ export function DataTable<TData, TValue>({
   return (
     <div className="px-4">
       <h1 className="scroll-m-20 font-heading text-4xl font-extrabold tracking-tight text-balance">
-        Orders
+        Books
       </h1>
       <div className="flex items-center gap-2 py-4">
-        {/*
         <Input
-          placeholder="Filter emails..."
-          value={
-            (table.getColumn("createdBy")?.getFilterValue() as string) ?? ""
-          }
+          placeholder="Filter titles..."
+          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("createdBy")?.setFilterValue(event.target.value)
+            table.getColumn("title")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
-        */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
@@ -113,6 +107,7 @@ export function DataTable<TData, TValue>({
               })}
           </DropdownMenuContent>
         </DropdownMenu>
+        <AddBookForm />
       </div>
       <div className="overflow-hidden rounded-md border">
         <div className="max-h-screen overflow-y-auto">

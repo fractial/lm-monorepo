@@ -14,9 +14,10 @@ import { API_URL, useAuth } from "@/components/auth"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { initials, type User, useUsers } from "@/app/dashboard/users/columns"
 import { useEffect, useState } from "react"
+import Link from "next/link"
 
 export function User() {
-  const {logout, isAuthenticated, accessToken } = useAuth()
+  const { logout, isAuthenticated, accessToken } = useAuth()
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -27,22 +28,21 @@ export function User() {
     router.push(`/login?redirect=${encodeURIComponent(currentPath)}`)
   }
 
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(null)
 
   useEffect(() => {
+    if (!accessToken) {
+      setUser(null)
+      return
+    }
     const fetchAsync = async () => {
-      const res = await fetch(`${API_URL}/user/${accessToken?.data.sub}`, {
+      const res = await fetch(`${API_URL}/user/${accessToken.data.sub}`, {
         method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken?.token}`,
-        },
+        headers: { Authorization: `Bearer ${accessToken.token}` },
       })
-      if (!res.ok) {
-        throw new Error("Failed to fetch users")
-      }
+      if (!res.ok) return
       setUser(await res.json())
     }
-
     fetchAsync()
   }, [accessToken?.data.sub, accessToken?.token])
 
@@ -53,20 +53,20 @@ export function User() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="rounded-full">
               <Avatar>
-                <AvatarFallback>{user?.name ?  initials(user.name) : "?"}</AvatarFallback>
+                <AvatarFallback>{user?.name ? initials(user.name) : "?"}</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-32">
+          <DropdownMenuContent className="w-36">
             <DropdownMenuGroup>
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Billing</DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/profile">Profil</Link>
+              </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem variant="destructive" onClick={() => logout()}>
-                Log out
+                Abmelden
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>

@@ -246,10 +246,16 @@ const orderStatus = {
   refunded: RotateCcw,
 }
 
+function CreatedByCell({ userId }: { userId: string }) {
+  const { users } = useUsers()
+  return <>{users.find((u) => u.id === userId)?.name ?? "Unknown"}</>
+}
+
 export const columnTitles = {
   id: "Order Id",
   items: "Items",
   total: "Total",
+  paymentMethod: "Payment",
   status: "Status",
   createdBy: "Created by",
   createdAt: "Created at",
@@ -267,10 +273,7 @@ export const columns: ColumnDef<Order>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title={columnTitles.createdBy} />
     ),
-    cell: ({ row }) => {
-      const {users} = useUsers()
-      return users.find((user) => user.id === row.original.createdBy)?.name ?? "Unknown"
-    },
+    cell: ({ row }) => <CreatedByCell userId={row.original.createdBy} />,
   },
   {
     accessorKey: "items",
@@ -339,6 +342,17 @@ export const columns: ColumnDef<Order>[] = [
         style: "currency",
         currency: "EUR",
       }).format(Number(row.original.total.toFixed(2))),
+  },
+  {
+    accessorKey: "paymentMethod",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title={columnTitles.paymentMethod} />
+    ),
+    cell: ({ row }) => (
+      <Badge variant="outline">
+        {row.original.paymentMethod === "card" ? "Card" : "Invoice"}
+      </Badge>
+    ),
   },
   {
     accessorKey: "status",

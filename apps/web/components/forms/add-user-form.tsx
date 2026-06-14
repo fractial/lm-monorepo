@@ -1,3 +1,5 @@
+"use client"
+
 import { useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import * as v from "valibot"
