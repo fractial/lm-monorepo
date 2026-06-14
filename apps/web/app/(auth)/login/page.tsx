@@ -1,17 +1,12 @@
 "use client"
 
-import { useAuth } from "@/components/auth"
-import { useState } from "react"
-import { AddUserForm } from "@/components/forms/add-user-form"
 import { LoginForm } from "@/components/forms/login-form"
 
-export default function Page() {
-
-
+export default function LoginPage() {
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
       <div className="w-full max-w-sm">
-        <AddUserForm />
+        <LoginForm />
       </div>
     </div>
   )
