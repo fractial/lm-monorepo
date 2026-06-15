@@ -24,9 +24,11 @@ export default function Header() {
 
   return (
     <header className="relative flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-      <div className="font-heading text-2xl font-bold whitespace-normal sm:whitespace-nowrap">
-        Literaturhaus München
-      </div>
+      <Link href="/" className="z-20">
+          <span className="font-heading text-2xl font-bold whitespace-normal sm:whitespace-nowrap">
+            Literaturhaus München
+          </span>
+      </Link>
       <ul className="absolute inset-0 z-10 hidden items-center justify-center gap-2 lg:flex">
         {linkList.map((link) => (
           <Link href={link.href} key={link.title} className="z-50">
@@ -36,7 +38,7 @@ export default function Header() {
           </Link>
         ))}
       </ul>
-      <div className="ml-auto z-20 flex items-center gap-2 px-4">
+      <div className="z-20 ml-auto flex items-center gap-2 px-4">
         <ul className="flex items-center gap-2 lg:hidden">
           {linkList.map((link) => (
             <Link href={link.href} key={link.title} className="z-50">

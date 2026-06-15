@@ -367,7 +367,7 @@ export default function SearchPage() {
                 <SheetHeader>
                   <SheetTitle>Filter</SheetTitle>
                 </SheetHeader>
-                <div className="mt-6">
+                <div className="mt-6 px-6">
                   <FilterContent />
                 </div>
               </SheetContent>

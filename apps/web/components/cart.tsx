@@ -173,7 +173,7 @@ function CartSidebar() {
           </div>
         ) : (
           <>
-            <div className="flex-1 overflow-y-auto py-4">
+            <div className="flex-1 overflow-y-auto px-6 py-4">
               <div className="space-y-6">
                 {items.map((item) => (
                   <div key={item.id} className="flex gap-4">
@@ -254,7 +254,7 @@ function CartSidebar() {
 
             <Separator />
 
-            <div className="space-y-4 pt-4">
+            <div className="space-y-4 px-6 pt-4 pb-2">
               <div className="flex items-center justify-between text-base font-semibold">
                 <span>Gesamtbetrag</span>
                 <span>{total.toFixed(2)} €</span>
